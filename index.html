@@ -3,22 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Leaflet CSS for the map -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-  <title>Encryptic — NC Flights • RTX Demo</title>
+  <title>Protect — Hack Rangers Secure Chat</title>
   <style>
     :root{
       --bg:#050814;
       --card:#0b111d;
       --card-soft:#111827;
-      --accent:#ff0033;       /* RTX red */
+      --accent:#ff0033;
       --accent-soft:#ff4b6a;
       --muted:#9ca3af;
-      --sim:#f97316;
-      --glass: rgba(15,23,42,0.7);
+      --good:#22c55e;
+      --bad:#f97316;
     }
     *{box-sizing:border-box}
     body{
@@ -32,22 +27,23 @@
       min-height:100vh;
       display:flex;
       justify-content:center;
-      padding:28px;
+      padding:24px;
     }
-    .wrap{width:100%;max-width:1080px;}
+    .wrap{width:100%;max-width:1120px;}
+
     header{text-align:center;margin-bottom:18px}
     header h1{
       margin:6px 0;
       font-size:1.7rem;
       color:#f9fafb;
-      letter-spacing:0.03em;
+      letter-spacing:0.04em;
     }
     header p{
-      margin:6px 0 0 0;
+      margin:4px 0;
       color:var(--muted);
-      font-size:0.95rem;
+      font-size:0.9rem;
     }
-    header .rtx-tag{
+    .tag{
       display:inline-flex;
       align-items:center;
       gap:6px;
@@ -59,19 +55,19 @@
       text-transform:uppercase;
       letter-spacing:0.08em;
     }
-    header .safety-banner{
+    .banner{
       margin-top:10px;
       display:inline-flex;
       align-items:flex-start;
       gap:8px;
       padding:8px 12px;
       border-radius:10px;
-      background:rgba(248,250,252,0.03);
-      border:1px dashed rgba(248,113,113,0.7);
-      color:#fecaca;
+      background:rgba(15,23,42,0.85);
+      border:1px dashed rgba(148,163,184,0.7);
       font-size:0.8rem;
-      max-width:720px;
+      max-width:780px;
       text-align:left;
+      color:#e5e7eb;
     }
 
     .controls{
@@ -79,17 +75,53 @@
       flex-wrap:wrap;
       gap:10px;
       justify-content:center;
-      margin:20px 0
+      margin:10px 0;
+      align-items:center;
+      font-size:0.85rem;
     }
+    .controls-label{
+      font-size:0.78rem;
+      color:#9ca3af;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+    }
+    .text-input{
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.7);
+      background:#020617;
+      color:#e5e7eb;
+      font-size:0.8rem;
+      min-width:150px;
+    }
+    .key-input{
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.7);
+      background:#020617;
+      color:#e5e7eb;
+      min-width:220px;
+      font-size:0.8rem;
+    }
+    .color-input{
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      border:1px solid rgba(148,163,184,0.7);
+      background:#020617;
+      padding:0;
+      cursor:pointer;
+    }
+
     .btn{
       background:var(--accent);
       color:#f9fafb;
       border:none;
-      padding:10px 14px;
+      padding:8px 12px;
       border-radius:999px;
       cursor:pointer;
       font-weight:600;
-      font-size:0.9rem;
+      font-size:0.85rem;
       box-shadow:0 8px 22px rgba(239,68,68,0.35);
       border:1px solid rgba(248,113,113,0.4);
       transition:0.18s ease;
@@ -109,864 +141,674 @@
       box-shadow:0 6px 18px rgba(15,23,42,0.8);
     }
 
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      color:var(--muted);
-      font-size:0.85rem;
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(15,23,42,0.75);
-      border:1px solid rgba(55,65,81,0.9);
-    }
-    .toggle input{
-      accent-color:var(--sim);
-    }
-
-    /* search styling */
-    .search-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background:linear-gradient(135deg,#020617,#0b1120);
-      border-radius:999px;
-      padding:1px;
-      border:1px solid rgba(148,163,184,0.7);
-      box-shadow:0 0 18px rgba(15,23,42,0.9);
-    }
-    .search-input {
-      padding: 9px 38px 9px 36px;
-      border-radius:999px;
-      border:none;
-      min-width: 230px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      background: radial-gradient(circle at top left,#020617 0,#020617 40%,#020617 100%);
-      color: #e5e7eb;
-      transition:0.2s ease;
-    }
-    .search-input::placeholder {
-      color:#6b7280;
-    }
-    .search-input:focus {
-      outline:none;
-      box-shadow:0 0 0 1px var(--accent-soft);
-    }
-    .search-icon {
-      position:absolute;
-      left:12px;
-      color:var(--accent-soft);
-      font-size:1rem;
-      pointer-events:none;
-    }
-
-    .sim-select{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.7);
-      background:#020617;
-      color:#e5e7eb;
-      font-size:0.8rem;
-    }
-
-    .area{
+    .grid{
       display:grid;
-      grid-template-columns:1.3fr 0.9fr;
-      gap:18px;
-      align-items:start;
-      margin-top:8px;
-    }
-    .flights{
-      background:radial-gradient(circle at top left,#020617 0,#020617 35%,#020617 100%);
-      border-radius:16px;
-      padding:16px;
-      box-shadow:0 18px 38px rgba(0,0,0,0.9);
-      border:1px solid rgba(31,41,55,0.9);
-    }
-    .side{
-      background:var(--glass);
-      padding:16px;
-      border-radius:14px;
-      box-shadow:0 16px 32px rgba(0,0,0,0.85);
-      border:1px solid rgba(31,41,55,0.9);
-      backdrop-filter:blur(16px);
-      font-size:12px;
-    }
-    .side h4{
-      margin:0 0 8px 0;
-      font-size:0.95rem;
-      letter-spacing:0.04em;
-      text-transform:uppercase;
-      color:#e5e7eb;
+      grid-template-columns:1.1fr 1fr;
+      gap:14px;
     }
 
-    .flight{
+    .panel{
+      background:var(--card);
+      border-radius:16px;
+      padding:12px;
+      box-shadow:0 16px 32px rgba(0,0,0,0.9);
+      border:1px solid rgba(31,41,55,0.8);
+      display:flex;
+      flex-direction:column;
+      min-height:380px;
+    }
+    .panel h2{
+      margin:0 0 6px 0;
+      font-size:0.95rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:#e5e7eb;
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding:12px;
-      border-radius:12px;
-      margin-bottom:10px;
-      border:1px solid rgba(31,41,55,0.8);
-      background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(17,24,39,0.95));
-      transition:0.18s ease;
-      cursor:pointer;
     }
-    .flight .left{flex:1}
-    .flight h3{
-      margin:0;
-      font-size:0.98rem;
-      color:#f9fafb;
-    }
-    .meta{
+    .subtitle{
+      font-size:0.75rem;
       color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .chat-log{
+      flex:1;
+      overflow-y:auto;
+      border-radius:10px;
+      background:radial-gradient(circle at top left,#020617 0,#020617 40%,#020617 100%);
+      padding:8px;
       font-size:0.82rem;
+    }
+    .chat-msg{
+      margin-bottom:8px;
+      max-width:95%;
+    }
+    .chat-msg.me{
+      text-align:right;
+      margin-left:auto;
+    }
+    .bubble{
+      display:inline-block;
+      padding:6px 9px;
+      border-radius:12px;
+      background:#111827;
+      border:1px solid rgba(55,65,81,0.9);
+    }
+    .bubble.me{
+      /* sender color set inline */
+    }
+    .bubble.expired{
+      background:#020617;
+      border-style:dashed;
+      color:#9ca3af;
+      font-style:italic;
+    }
+    .meta-line{
+      font-size:10px;
+      color:#6b7280;
+      margin-top:2px;
+    }
+
+    .chat-options-row{
       margin-top:6px;
+      display:flex;
+      gap:6px;
+      justify-content:flex-end;
+      font-size:0.75rem;
+      color:#9ca3af;
     }
-    .right{text-align:right;min-width:130px}
-    .status{
-      font-weight:700;
-      font-size:0.85rem;
-      color:#e5e7eb;
-    }
-    .sim-pill{
-      display:inline-block;
-      padding:5px 8px;
+    .mini-select{
+      padding:4px 8px;
       border-radius:999px;
-      background:rgba(249,115,22,0.16);
-      color:#fed7aa;
-      font-size:11px;
-      margin-left:8px;
-      border:1px solid rgba(249,115,22,0.8);
-      text-transform:uppercase;
-      letter-spacing:0.06em;
+      border:1px solid rgba(55,65,81,0.9);
+      background:#020617;
+      color:#e5e7eb;
+      font-size:0.75rem;
     }
-    .flight.simulated{
-      border-left:4px solid var(--sim);
-      box-shadow:0 10px 26px rgba(249,115,22,0.4);
+
+    .chat-input-row{
+      margin-top:6px;
+      display:flex;
+      gap:6px;
     }
-    /* trust badges */
-    .trust-badge{
+    .chat-input{
+      flex:1;
+      padding:7px 9px;
+      border-radius:999px;
+      border:1px solid rgba(55,65,81,0.9);
+      background:#020617;
+      color:#e5e7eb;
+      font-size:0.85rem;
+    }
+
+    .wire-log{
+      flex:1;
+      overflow-y:auto;
+      border-radius:10px;
+      background:#020617;
+      padding:8px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:0.78rem;
+    }
+    .wire-entry{
+      margin-bottom:6px;
+      padding:6px 7px;
+      border-radius:8px;
+      background:#020617;
+      border:1px solid rgba(31,41,55,0.9);
+    }
+    .wire-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:10px;
+      color:#9ca3af;
+      margin-bottom:4px;
+    }
+    code{
+      color:#e5e7eb;
+      word-break:break-all;
+    }
+
+    .pill{
       display:inline-block;
-      padding:3px 7px;
+      padding:2px 6px;
       border-radius:999px;
       font-size:10px;
       text-transform:uppercase;
-      letter-spacing:0.06em;
-      margin-bottom:4px;
+      letter-spacing:0.08em;
     }
-    .trust-real{
+    .pill-ok{
       background:rgba(34,197,94,0.15);
       color:#bbf7d0;
       border:1px solid rgba(34,197,94,0.8);
     }
-    .trust-sim{
-      background:rgba(248,113,113,0.15);
-      color:#fecaca;
-      border:1px solid rgba(248,113,113,0.9);
+    .pill-bad{
+      background:rgba(249,115,22,0.16);
+      color:#fed7aa;
+      border:1px solid rgba(249,115,22,0.9);
     }
 
-    /* analyst mode extra meta */
-    .analyst-meta{
-      display:none;
-      font-size:11px;
-      color:#9ca3af;
-      margin-top:6px;
-    }
-    body.analyst-mode .analyst-meta{
-      display:block;
-    }
-
-    /* highlight selected flight card */
-    .flight.highlighted{
-      border:1px solid var(--accent-soft);
-      box-shadow:0 0 0 1px rgba(248,113,113,0.5),0 12px 34px rgba(239,68,68,0.55);
-      transform:translateY(-1px);
-    }
-
-    .note{
-      font-size:11px;
-      color:#9ca3af;
-      margin-top:8px;
-    }
-    footer{
-      margin-top:18px;
-      text-align:center;
-      color:#6b7280;
-      font-size:12px;
-    }
-    footer span{
-      color:var(--accent-soft);
-    }
-
-    #map{
-      height:420px;
-      border-radius:18px;
-      margin:22px 0 10px 0;
-      box-shadow:0 20px 46px rgba(0,0,0,0.95);
+    .explain-panel{
+      margin-top:10px;
+      padding:8px;
+      border-radius:12px;
+      background:rgba(15,23,42,0.9);
       border:1px solid rgba(31,41,55,0.9);
-      overflow:hidden;
+      font-size:0.78rem;
     }
-
-    .layer-toggles{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:flex-end;
-      font-size:11px;
-      color:#9ca3af;
-      margin-bottom:6px;
-    }
-    .layer-toggles label{
-      display:flex;
-      align-items:center;
-      gap:5px;
-      padding:3px 8px;
-      border-radius:999px;
-      background:rgba(15,23,42,0.8);
-      border:1px solid rgba(55,65,81,0.9);
-    }
-    .layer-toggles input{
-      accent-color:var(--accent-soft);
-    }
-
-    .integrity-panel{
-      margin-top:4px;
-      padding:8px 10px;
-      border-radius:10px;
-      background:rgba(15,23,42,0.85);
-      border:1px solid rgba(55,65,81,0.9);
-      font-size:11px;
-      color:#e5e7eb;
-    }
-    .integrity-panel strong{
-      font-size:11px;
+    .explain-panel h3{
+      margin:0 0 4px 0;
+      font-size:0.8rem;
       text-transform:uppercase;
       letter-spacing:0.08em;
       color:#e5e7eb;
     }
-    .integrity-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:6px;
-      margin-top:6px;
+    .explain-panel pre{
+      margin:3px 0;
+      white-space:pre-wrap;
+      word-break:break-all;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size:0.75rem;
+      color:#e5e7eb;
     }
-    .integrity-item{
-      padding:4px 6px;
-      border-radius:8px;
-      background:rgba(15,23,42,0.9);
+
+    .audit-log{
+      margin-top:8px;
+      padding:8px;
+      border-radius:12px;
+      background:#020617;
       border:1px solid rgba(31,41,55,0.9);
-      text-align:center;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size:0.78rem;
+      max-height:140px;
+      overflow-y:auto;
     }
-    .integrity-item span{
-      display:block;
-      font-size:10px;
+    .audit-log h3{
+      margin:0 0 4px 0;
+      font-size:0.8rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:#e5e7eb;
+    }
+    .audit-entry{
+      margin-bottom:2px;
       color:#9ca3af;
     }
-    .integrity-item b{
-      font-size:13px;
+
+    /* Privacy blur: only affects plaintext chat bubbles */
+    .privacy-on .chat-log .bubble{
+      filter:blur(6px);
     }
 
-    .anomaly-panel{
-      margin-top:10px;
-      padding:8px 10px;
-      border-radius:10px;
-      background:rgba(15,23,42,0.85);
-      border:1px solid rgba(55,65,81,0.9);
-      max-height:130px;
-      overflow:auto;
-    }
-    .anomaly-panel ul{
-      margin:4px 0 0 14px;
-      padding:0;
-    }
-
-    .details-drawer{
-      margin-top:10px;
-      padding:10px;
-      border-radius:10px;
-      background:rgba(15,23,42,0.85);
-      border:1px solid rgba(55,65,81,0.9);
-      min-height:80px;
-    }
-    .details-drawer h5{
-      margin:0 0 6px 0;
-      font-size:0.9rem;
-      color:#f9fafb;
-    }
-    .details-drawer .row{
-      font-size:11px;
-      margin-bottom:4px;
-    }
-
-    @media (max-width:880px){
-      .area{grid-template-columns:1fr}
-      .right{min-width:90px}
-      .controls{
-        flex-direction:column;
-        align-items:stretch
+    @media (max-width:980px){
+      .grid{
+        grid-template-columns:1fr;
       }
-      .search-wrapper{width:100%}
-      .search-input{width:100%}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="rtx-tag">
-        RTX • Collins AeroAPI Demo
-      </div>
-      <h1>Encryptic — NC Flight Viewer</h1>
-      <p>Visualize Collins AeroAPI data, clearly labeled simulated Bluff City (NIH) routes, and extra test flights in an RTX-styled safety dashboard.</p>
-      <div class="safety-banner">
-        <span>⚠️</span>
+      <div class="tag">Protect • Hack Rangers Secure Chat</div>
+      <h1>Encryptic — Ranger Secure Line</h1>
+      <p>Open this page in two windows. Each Ranger uses their own window; messages are encrypted on send and decrypted on receive.</p>
+      <div class="banner">
+        <span>🔐</span>
         <span>
-          This is a training demo. Simulated flights are <strong>not real</strong> and must never be used for navigation or operational decisions.
-          All injected flights are labeled SIMULATED and flagged in the map and panels below.
+          Demo-only crypto: this is a custom educational scheme, not real production encryption.
+          It shows how shared keys, encryption, integrity checks, and expiry protect Ranger comms.
         </span>
       </div>
     </header>
 
+    <!-- Identity + color -->
     <div class="controls">
-      <button class="btn" id="loadBtn">Load NC Flights</button>
-      <button class="btn secondary" id="clearBtn">Clear</button>
+      <span class="controls-label">Your Ranger name</span>
+      <input id="myNameInput" class="text-input" value="Nova" />
 
-      <label class="toggle" title="When checked, the page will append a Bluff City (NIH) simulated flight after loading Collins data">
-        <input type="checkbox" id="appendSim" />
-        Append Bluff City (NIH) sim
-      </label>
+      <span class="controls-label">Peer name</span>
+      <input id="peerNameInput" class="text-input" value="Vega" />
 
-      <label class="toggle" title="Show additional technical fields and IDs">
-        <input type="checkbox" id="analystToggle" />
-        Analyst mode
-      </label>
-
-      <!-- Simulated presets -->
-      <select id="simPreset" class="sim-select" title="Choose an extra simulated flight scenario">
-        <option value="bluffCityExtra">Bluff City NIH → CLT (demo)</option>
-        <option value="nihToRdu">Bluff City NIH → RDU (test)</option>
-        <option value="unknownOrigin">Unknown ORG → CLT (anomaly)</option>
-      </select>
-      <button class="btn secondary" id="addSimBtn" title="Add the selected simulated flight preset">
-        Add Sim Preset
-      </button>
-
-      <!-- 🔍 RTX-styled search with plane icon -->
-      <div class="search-wrapper">
-        <span class="search-icon">✈️</span>
-        <input
-          type="text"
-          id="searchInput"
-          class="search-input"
-          placeholder="Search by flight # (CA123) or ID"
-        />
-      </div>
-      <button class="btn" id="searchBtn">
-        Search Flight
-      </button>
+      <span class="controls-label">Your color</span>
+      <input id="myColorInput" class="color-input" type="color" value="#ff4b6a" />
     </div>
 
-    <!-- 🌍 Map section -->
-    <div id="map"></div>
-
-    <!-- Layer toggles -->
-    <div class="layer-toggles">
-      <label><input type="checkbox" id="showReal" checked> Real flights</label>
-      <label><input type="checkbox" id="showSim" checked> Simulated flights</label>
+    <!-- Key + privacy -->
+    <div class="controls">
+      <span class="controls-label">Shared secret key</span>
+      <input id="keyInput" class="key-input" value="HACK-RANGERS-RTX" />
+      <button class="btn secondary" id="randomKeyBtn">Randomize key</button>
+      <button class="btn secondary" id="privacyBtn">Privacy mode: Off</button>
     </div>
 
-    <!-- flight list + sidebar -->
-    <div class="area">
-      <div class="flights" id="flightsContainer"></div>
-
-      <aside class="side">
-        <h4>Info & Notes</h4>
-        <p class="note">
-          This dashboard shows Collins AeroAPI NC flights plus clearly labeled simulated traffic used for testing.
-          Simulated flights are visually distinct, flagged in the integrity panel, and annotated in the details drawer.
-        </p>
-
-        <div id="integritySummary" class="integrity-panel">
-          <!-- filled by JS -->
+    <div class="grid">
+      <!-- Left: your chat -->
+      <section class="panel">
+        <h2><span id="panelTitle">Ranger Nova — Your Chat</span></h2>
+        <div class="subtitle">
+          This window is your side of the line. Type below to send encrypted messages to your peer window.
         </div>
 
-        <div id="anomaliesPanel" class="anomaly-panel">
-          <!-- filled by JS -->
+        <div id="chatLog" class="chat-log"></div>
+
+        <div class="chat-options-row">
+          <select id="sensSelect" class="mini-select">
+            <option value="Unclassified">Unclassified</option>
+            <option value="Secret">Secret</option>
+            <option value="Top Secret">Top Secret</option>
+          </select>
+          <select id="ttlSelect" class="mini-select">
+            <option value="0">No expiry</option>
+            <option value="10">Expire in 10s</option>
+            <option value="30">Expire in 30s</option>
+            <option value="60">Expire in 60s</option>
+          </select>
         </div>
 
-        <div id="detailsDrawer" class="details-drawer">
-          <div class="note">Select a flight from the list, search box, or map to view detailed information and potential issues.</div>
+        <form id="chatForm" class="chat-input-row">
+          <input id="chatInput" class="chat-input" placeholder="Type a secure message…" />
+          <button class="btn" type="submit">Send</button>
+        </form>
+      </section>
+
+      <!-- Right: wire + explain + audit -->
+      <section class="panel">
+        <h2>Encrypted Wire &amp; Explain</h2>
+        <div class="subtitle">
+          See ciphertext traveling over the wire, watch your encryption steps, and verify decryption integrity for incoming messages.
         </div>
-      </aside>
+
+        <div id="wireLog" class="wire-log"></div>
+
+        <div id="explainPanel" class="explain-panel">
+          <h3>Encryption / Decryption Pipeline</h3>
+          <div id="explainContent">
+            <p style="margin:0;color:#9ca3af;font-size:0.78rem;">
+              Send a message to watch it turn from plaintext → checksum → payload → XOR → Base64 ciphertext.
+              When a message arrives from your peer, this panel updates with the decryption integrity result.
+            </p>
+          </div>
+        </div>
+
+        <div id="auditLog" class="audit-log">
+          <h3>Security / Audit Log</h3>
+        </div>
+      </section>
     </div>
-
-    <footer>
-      RTX-themed demo • <span>Encryptic x Collins AeroAPI</span> • Simulated flights are clearly labeled
-    </footer>
   </div>
 
-  <!-- Leaflet JS for the map -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <script>
-    // ==== DOM ELEMENTS ====
-    const loadBtn = document.getElementById('loadBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const flightsContainer = document.getElementById('flightsContainer');
-    const appendSimCheckbox = document.getElementById('appendSim');
-    const analystToggle = document.getElementById('analystToggle');
-    const simPresetSelect = document.getElementById('simPreset');
-    const addSimBtn = document.getElementById('addSimBtn');
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const integritySummary = document.getElementById('integritySummary');
-    const anomaliesPanel = document.getElementById('anomaliesPanel');
-    const detailsDrawer = document.getElementById('detailsDrawer');
-    const showRealCheckbox = document.getElementById('showReal');
-    const showSimCheckbox = document.getElementById('showSim');
+    // ====== Demo crypto (educational only) ======
+    let lastExplain = null;
 
-    // store current flights
-    let currentFlights = [];
-    let analystMode = false;
-    let lastHighlightKey = null;
-    let simCounter = 1;
+    function getKeyBytes(key) {
+      if (!key) key = "DEFAULT-KEY";
+      const bytes = [];
+      for (let i = 0; i < key.length; i++) {
+        bytes.push(key.charCodeAt(i) & 0xff);
+      }
+      return bytes.length ? bytes : [0x42];
+    }
 
-    // ==== MAP SETUP ====
-    const airportCoords = {
-      CLT:{lat:35.2144,lon:-80.9473},
-      RDU:{lat:35.8801,lon:-78.7880},
-      GSO:{lat:36.1053,lon:-79.9370},
-      ILM:{lat:34.2706,lon:-77.9026},
-      FAY:{lat:34.9912,lon:-78.8803},
-      OAJ:{lat:34.8292,lon:-77.6121},
-      EWN:{lat:35.0730,lon:-77.0429},
-      PGV:{lat:35.6352,lon:-77.3853},
-      NIH:{lat:35.25,lon:-78.95} // fake Bluff City
+    function checksum(text) {
+      let sum = 0;
+      for (let i = 0; i < text.length; i++) {
+        sum = (sum + text.charCodeAt(i)) % 1000;
+      }
+      return sum;
+    }
+
+    function encryptMessage(plain, key) {
+      const keyBytes = getKeyBytes(key);
+      const cs = checksum(plain);
+      const payload = plain + "::" + String(cs).padStart(3, "0");
+
+      let xored = "";
+      const hexBytes = [];
+      for (let i = 0; i < payload.length; i++) {
+        const k = keyBytes[i % keyBytes.length];
+        const c = payload.charCodeAt(i);
+        const xorVal = c ^ k;
+        xored += String.fromCharCode(xorVal);
+        if (i < 16) {
+          hexBytes.push(xorVal.toString(16).padStart(2, "0"));
+        }
+      }
+      const cipher = btoa(xored);
+
+      lastExplain = {
+        plain,
+        checksum: cs,
+        payload,
+        xorPreview: hexBytes.join(" "),
+        cipher,
+        integrity: null
+      };
+      updateExplainPanel();
+
+      return cipher;
+    }
+
+    function decryptMessage(cipher, key) {
+      const keyBytes = getKeyBytes(key);
+      try {
+        const xored = atob(cipher);
+        let payload = "";
+        for (let i = 0; i < xored.length; i++) {
+          const k = keyBytes[i % keyBytes.length];
+          const c = xored.charCodeAt(i);
+          payload += String.fromCharCode(c ^ k);
+        }
+        const sep = payload.lastIndexOf("::");
+        if (sep === -1) {
+          if (lastExplain && lastExplain.cipher === cipher) {
+            lastExplain.integrity = { ok:false, tampered:true };
+            updateExplainPanel();
+          }
+          return { ok: false, plain: "[no checksum delimiter]", tampered: true };
+        }
+        const text = payload.slice(0, sep);
+        const csStr = payload.slice(sep + 2);
+        const expected = parseInt(csStr, 10);
+        const actual = checksum(text);
+        const tampered = isNaN(expected) || expected !== actual;
+
+        if (lastExplain && lastExplain.cipher === cipher) {
+          lastExplain.integrity = { ok: !tampered, tampered };
+          updateExplainPanel();
+        }
+
+        if (tampered) return { ok: true, plain: text, tampered: true };
+        return { ok: true, plain: text, tampered: false };
+      } catch (e) {
+        if (lastExplain && lastExplain.cipher === cipher) {
+          lastExplain.integrity = { ok:false, tampered:true };
+          updateExplainPanel();
+        }
+        return { ok: false, plain: "[unable to decode]", tampered: true };
+      }
+    }
+
+    function updateExplainPanel() {
+      const container = document.getElementById("explainContent");
+      if (!lastExplain) {
+        container.innerHTML =
+          '<p style="margin:0;color:#9ca3af;font-size:0.78rem;">Send a message to watch it turn from plaintext → checksum → payload → XOR → Base64 ciphertext. When a message arrives from your peer, this panel updates with the decryption integrity result.</p>';
+        return;
+      }
+      const integ = lastExplain.integrity;
+      const integText = integ
+        ? (integ.ok && !integ.tampered
+            ? "Decryption integrity: OK"
+            : "Decryption integrity: FAILED")
+        : "Decryption integrity: (not yet checked)";
+      container.innerHTML = `
+        <pre><strong>Plaintext:</strong> ${lastExplain.plain}</pre>
+        <pre><strong>Checksum:</strong> ${lastExplain.checksum}</pre>
+        <pre><strong>Payload (text::checksum):</strong> ${lastExplain.payload}</pre>
+        <pre><strong>XOR bytes (first 16):</strong> ${lastExplain.xorPreview}</pre>
+        <pre><strong>Base64 ciphertext:</strong> ${lastExplain.cipher}</pre>
+        <pre><strong>${integText}</strong></pre>
+      `;
+    }
+
+    // ====== State ======
+    const state = {
+      myName: "Nova",
+      peerName: "Vega",
+      myColor: "#ff4b6a",
+      privacyOn: false
     };
 
-    const map = L.map('map').setView([35.5, -79.5], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:'&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    const flightLayer = L.layerGroup().addTo(map);
+    // ====== DOM ======
+    const myNameInput = document.getElementById("myNameInput");
+    const peerNameInput = document.getElementById("peerNameInput");
+    const myColorInput = document.getElementById("myColorInput");
+    const keyInput = document.getElementById("keyInput");
+    const randomKeyBtn = document.getElementById("randomKeyBtn");
+    const privacyBtn = document.getElementById("privacyBtn");
 
-    function isSimulatedFlight(f){
-      return f.simulated === true ||
-        String(f.status||'').toUpperCase().includes('SIMULATED') ||
-        (f.note && f.note.toUpperCase().includes('SIMULATED'));
+    const panelTitle = document.getElementById("panelTitle");
+    const chatLog = document.getElementById("chatLog");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const wireLog = document.getElementById("wireLog");
+    const auditLog = document.getElementById("auditLog");
+
+    const sensSelect = document.getElementById("sensSelect");
+    const ttlSelect = document.getElementById("ttlSelect");
+
+    // ====== BroadcastChannel (two-window link) ======
+    let channel = null;
+    if ("BroadcastChannel" in window) {
+      channel = new BroadcastChannel("hack-rangers-protect");
     }
 
-    function getTrustInfo(f){
-      if (isSimulatedFlight(f)){
-        return { label:'Simulated / Injected', css:'trust-sim' };
-      }
-      return { label:'Collins API (Primary)', css:'trust-real' };
+    // ====== Helpers ======
+    function logEvent(msg) {
+      const line = document.createElement("div");
+      line.className = "audit-entry";
+      const ts = new Date().toLocaleTimeString();
+      line.textContent = `[${ts}] ${msg}`;
+      auditLog.appendChild(line);
+      auditLog.scrollTop = auditLog.scrollHeight;
     }
 
-    function getAnomaliesForFlight(f){
-      const issues = [];
-      const originRaw = f.originCode || '';
-      const destRaw   = f.destinationCode || '';
-      const origin = originRaw.replace(/^K/,'');
-      const dest   = destRaw.replace(/^K/,'');
-
-      if (!airportCoords[origin]){
-        issues.push(`Origin airport ${origin || 'UNKNOWN'} is not in the configured NC list.`);
-      }
-      if (!airportCoords[dest]){
-        issues.push(`Destination airport ${dest || 'UNKNOWN'} is not in the configured NC list.`);
-      }
-      if (!f.scheduled && !f.time){
-        issues.push('Missing scheduled time in the record.');
-      }
-      if (isSimulatedFlight(f)){
-        issues.push('Simulated / injected flight (not real operational data).');
-      }
-      return issues;
+    function updateTitle() {
+      panelTitle.textContent = `Ranger ${state.myName} — Your Chat`;
     }
 
-    /**
-     * Plot flights on the map.
-     * @param {Array} flights
-     * @param {string|undefined|null} highlightKey  flight id or flightNumber to highlight
-     */
-    function plotFlightsOnMap(flights, highlightKey){
-      // reuse last highlight if none explicitly provided
-      if (typeof highlightKey === 'undefined'){
-        highlightKey = lastHighlightKey;
-      } else if (highlightKey){
-        lastHighlightKey = highlightKey.toLowerCase();
+    function colorWithAlpha(hex, alphaHex) {
+      if (!hex || hex[0] !== "#" || (hex.length !== 7 && hex.length !== 9)) return hex;
+      if (hex.length === 9) return hex;
+      return hex + alphaHex;
+    }
+
+    function trustLabel(ok, tampered) {
+      if (!ok) return "0 (failed)";
+      if (tampered) return "50 (suspicious)";
+      return "100 (high)";
+    }
+
+    function appendChatMessage(text, fromSelf, opts = {}) {
+      const msg = document.createElement("div");
+      msg.className = "chat-msg" + (fromSelf ? " me" : "");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (fromSelf ? " me" : "");
+      bubble.textContent = text;
+
+      if (fromSelf) {
+        bubble.style.borderColor = state.myColor;
+        bubble.style.backgroundColor = colorWithAlpha(state.myColor, "33");
+        bubble.style.boxShadow = `0 0 0 1px ${colorWithAlpha(state.myColor, "55")}`;
       }
 
-      flightLayer.clearLayers();
-      if(!flights || flights.length === 0) return;
+      const meta = document.createElement("div");
+      meta.className = "meta-line";
+      const who = fromSelf ? `${state.myName} (you)` : state.peerName;
+      const sensitivity = opts.sensitivity || "Unclassified";
+      const integrityText = opts.integrityText || "";
+      const trust = opts.trust || "";
+      meta.textContent =
+        `[${sensitivity}] ` +
+        who +
+        (integrityText ? ` • ${integrityText}` : "") +
+        (trust ? ` • Trust ${trust}` : "");
 
-      const showReal = !showRealCheckbox || showRealCheckbox.checked;
-      const showSim  = !showSimCheckbox || showSimCheckbox.checked;
-      const keyLower = (highlightKey || '').toLowerCase();
+      msg.appendChild(bubble);
+      msg.appendChild(meta);
+      chatLog.appendChild(msg);
+      chatLog.scrollTop = chatLog.scrollHeight;
 
-      flights.forEach(f=>{
-        const originCodeRaw = f.originCode || '';
-        const destCodeRaw   = f.destinationCode || '';
-        const origin = originCodeRaw.replace(/^K/,'');
-        const dest   = destCodeRaw.replace(/^K/,'');
+      const ttl = opts.ttlSeconds || 0;
+      if (ttl > 0) {
+        setTimeout(() => {
+          bubble.classList.add("expired");
+          bubble.textContent = "Message expired — ciphertext only retained on the wire.";
+          meta.textContent =
+            `[${sensitivity}] ` +
+            who +
+            " • Expired (local view)";
+          logEvent(`Ephemeral message from ${who} expired after ${ttl}s.`);
+        }, ttl * 1000);
+      }
+    }
 
-        const o = airportCoords[origin];
-        const d = airportCoords[dest];
-        const sim = isSimulatedFlight(f);
+    function appendWireEntry(directionText, cipher, intact, sensitivity) {
+      const entry = document.createElement("div");
+      entry.className = "wire-entry";
+      const header = document.createElement("div");
+      header.className = "wire-header";
+      const span = document.createElement("span");
+      span.textContent = `${directionText} [${sensitivity || "Unclassified"}]`;
+      const pill = document.createElement("span");
+      pill.className = "pill " + (intact ? "pill-ok" : "pill-bad");
+      pill.textContent = intact ? "INTACT" : "TAMPERED?";
+      header.appendChild(span);
+      header.appendChild(pill);
+      const codeEl = document.createElement("code");
+      codeEl.textContent = cipher;
+      entry.appendChild(header);
+      entry.appendChild(codeEl);
+      wireLog.appendChild(entry);
+      wireLog.scrollTop = wireLog.scrollHeight;
+    }
 
-        // layer filter
-        if (sim && !showSim) return;
-        if (!sim && !showReal) return;
+    // ====== Sending ======
+    function handleSend() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      chatInput.value = "";
 
-        if(!o || !d) return;
+      const key = keyInput.value || "HACK-RANGERS-RTX";
+      const sensitivity = sensSelect.value;
+      const ttlSeconds = parseInt(ttlSelect.value, 10) || 0;
 
-        const idLower = String(f.id||'').toLowerCase();
-        const fnLower = String(f.flightNumber||'').toLowerCase();
-        const isHighlight = keyLower && (idLower === keyLower || fnLower === keyLower);
+      logEvent(`${state.myName} sending ${sensitivity} message to ${state.peerName} (TTL ${ttlSeconds || 0}s).`);
 
-        L.polyline([[o.lat,o.lon],[d.lat,d.lon]],{
-          color:sim ? '#f97316' : '#22c55e',
-          weight:isHighlight ? 5 : 3,
-          opacity:isHighlight ? 1 : 0.8
-        }).addTo(flightLayer);
+      // Local plaintext view
+      appendChatMessage(text, true, {
+        sensitivity,
+        integrityText: "Sent (before encryption)",
+        ttlSeconds
+      });
 
-        const marker = L.circleMarker([d.lat,d.lon],{
-          radius:isHighlight ? 8 : 6,
-          color:sim ? '#f97316' : '#22c55e',
-          fillOpacity:0.9
-        }).addTo(flightLayer).bindPopup(
-          `<b>${f.airline||'Unknown'} • ${f.flightNumber||''}</b><br>${origin} → ${dest}<br>${f.status||''}`
-        );
+      // Encrypt (updates pipeline so sender can watch)
+      const cipher = encryptMessage(text, key);
 
-        marker.on('click', () => {
-          openFlightDetails(f);
+      // Ciphertext on wire
+      appendWireEntry(`${state.myName} → ${state.peerName}`, cipher, true, sensitivity);
+
+      // Broadcast to other window
+      if (channel) {
+        channel.postMessage({
+          type: "cipher",
+          from: state.myName,
+          to: state.peerName,
+          cipher,
+          sensitivity,
+          ttlSeconds
+        });
+      } else {
+        logEvent("BroadcastChannel not supported; messages stay local.");
+      }
+    }
+
+    // ====== Receiving ======
+    if (channel) {
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (!data || data.type !== "cipher") return;
+
+        // Ignore our own messages (we already handled the local view)
+        if (data.from === state.myName) return;
+
+        // Show ciphertext on wire
+        appendWireEntry(`${data.from} → ${state.myName}`, data.cipher, true, data.sensitivity);
+
+        const key = keyInput.value || "HACK-RANGERS-RTX";
+        const result = decryptMessage(data.cipher, key);
+        const tLabel = trustLabel(result.ok, result.tampered);
+        const intText = result.ok && !result.tampered
+          ? "Decrypted • Integrity OK"
+          : "Decrypted • Integrity FAILED";
+        const shownText = result.ok ? result.plain : result.plain;
+
+        // Show plaintext on receiver side
+        appendChatMessage(shownText, false, {
+          sensitivity: data.sensitivity,
+          ttlSeconds: data.ttlSeconds,
+          integrityText: intText,
+          trust: tLabel
         });
 
-        if(isHighlight){
-          map.setView([d.lat,d.lon], 8, { animate:true });
-          marker.openPopup();
-        }
-      });
-    }
-
-    function formatDate(iso) {
-      if (!iso) return 'TBD';
-      try { return new Date(iso).toLocaleString(); } catch { return iso; }
-    }
-
-    function escapeHtml(s) {
-      if (!s && s !== 0) return '';
-      return String(s)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#39;');
-    }
-
-    function clearFlights() {
-      currentFlights = [];
-      flightsContainer.innerHTML =
-        '<p style="color:var(--muted);text-align:center;margin:30px 0">No flights loaded.</p>';
-      plotFlightsOnMap([]);
-      updateIntegrityPanel([]);
-      updateAnomaliesPanel([]);
-      detailsDrawer.innerHTML =
-        '<div class="note">Select a flight from the list, search box, or map to view detailed information and potential issues.</div>';
-    }
-
-    function updateIntegrityPanel(flights){
-      const total = flights.length;
-      const simulated = flights.filter(isSimulatedFlight).length;
-      const suspicious = flights.filter(f => getAnomaliesForFlight(f).length > 0).length;
-      const real = total - simulated;
-
-      integritySummary.innerHTML = `
-        <strong>Data Integrity Summary</strong>
-        <div class="integrity-grid">
-          <div class="integrity-item">
-            <span>Total flights</span>
-            <b>${total}</b>
-          </div>
-          <div class="integrity-item">
-            <span>Real (Collins)</span>
-            <b>${real}</b>
-          </div>
-          <div class="integrity-item">
-            <span>Simulated / Suspicious</span>
-            <b>${simulated}/${suspicious}</b>
-          </div>
-        </div>
-      `;
-    }
-
-    function updateAnomaliesPanel(flights){
-      const withIssues = flights
-        .map(f => ({ flight:f, issues:getAnomaliesForFlight(f) }))
-        .filter(x => x.issues.length > 0);
-
-      if (!withIssues.length){
-        anomaliesPanel.innerHTML = `
-          <strong>Potential Issues</strong>
-          <p style="margin:4px 0 0 0;color:#9ca3af;font-size:11px">
-            No anomalies detected in the current view. Simulated and misconfigured flights will appear here.
-          </p>
-        `;
-        return;
-      }
-
-      anomaliesPanel.innerHTML = `
-        <strong>Potential Issues (${withIssues.length})</strong>
-        <ul>
-          ${withIssues.slice(0,6).map(x => `
-            <li>
-              <span style="color:#e5e7eb;font-size:11px">
-                <b>${escapeHtml(x.flight.flightNumber || x.flight.id || 'Flight')}</b>:
-                ${escapeHtml(x.issues[0])}
-              </span>
-            </li>
-          `).join('')}
-        </ul>
-        ${withIssues.length > 6 ? `<p style="margin:4px 0 0 0;font-size:10px;color:#9ca3af">+ ${withIssues.length-6} more…</p>` : ''}
-      `;
-    }
-
-    function renderFlights(flights) {
-      currentFlights = Array.isArray(flights) ? flights : [];
-      if (currentFlights.length === 0) {
-        clearFlights();
-        return;
-      }
-
-      flightsContainer.innerHTML = '';
-      currentFlights.forEach(f => {
-        const sim = isSimulatedFlight(f);
-        const trust = getTrustInfo(f);
-        const el = document.createElement('div');
-        el.className = 'flight' + (sim ? ' simulated' : '');
-        el.dataset.id = f.id || '';
-        el.dataset.flightNumber = f.flightNumber || '';
-
-        el.innerHTML = `
-          <div class="left">
-            <h3>${escapeHtml(f.airline || 'Unknown Airline')}
-              ${f.flightNumber ? ('• ' + escapeHtml(f.flightNumber)) : '' }
-              ${sim ? '<span class="sim-pill">SIMULATED — NOT REAL</span>' : ''}</h3>
-            <div class="meta">
-              ${escapeHtml(f.originCode || f.origin || '')}
-              →
-              ${escapeHtml(f.destinationCode || f.destination || '')}
-              •
-              ${formatDate(f.scheduled || f.time || '')}
-            </div>
-            <div class="note">${escapeHtml(f.note || '')}</div>
-            <div class="analyst-meta">
-              ID: ${escapeHtml(f.id || '—')} · Trust: ${escapeHtml(trust.label)}
-            </div>
-          </div>
-          <div class="right">
-            <div class="trust-badge ${trust.css}">${escapeHtml(trust.label)}</div>
-            <div class="status">${escapeHtml(f.status || 'Unknown')}</div>
-            <div class="meta" style="margin-top:4px">${escapeHtml(f.id || '')}</div>
-          </div>`;
-
-        el.addEventListener('click', () => openFlightDetails(f));
-        flightsContainer.appendChild(el);
-      });
-
-      updateIntegrityPanel(currentFlights);
-      updateAnomaliesPanel(currentFlights);
-      plotFlightsOnMap(currentFlights);
-    }
-
-    function baseBluffCitySim(){
-      return {
-        airline: 'Bluff City Air (SIMULATED)',
-        origin: 'Bluff City Airport (NIH) — SIMULATED — NOT REAL',
-        originCode: 'NIH',
-        status: 'SIMULATED',
-        note: 'SIMULATED ENTRY — FOR DEMO/TESTING PURPOSES ONLY. NOT REAL FLIGHT DATA.',
-        simulated: true
+        logEvent(
+          `${state.myName} received message from ${data.from} (integrity ${result.tampered ? "FAILED" : "OK"}, trust ${tLabel}).`
+        );
       };
+    } else {
+      logEvent("BroadcastChannel API not supported in this browser.");
     }
 
-    function createSimulatedBluffCityFlight() {
-      const base = baseBluffCitySim();
-      return {
-        ...base,
-        id: 'SIM-BLFF-' + String(simCounter++).padStart(3,'0'),
-        flightNumber: 'BC' + String(900 + simCounter),
-        destination: 'Charlotte Douglas (CLT)',
-        destinationCode: 'CLT',
-        scheduled: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString()
-      };
-    }
-
-    function createPresetSimFlight(presetId){
-      const t = baseBluffCitySim();
-      if (presetId === 'nihToRdu'){
-        return {
-          ...t,
-          id: 'SIM-NIH-RDU-' + String(simCounter++).padStart(3,'0'),
-          flightNumber: 'BC' + String(950 + simCounter),
-          destination: 'Raleigh-Durham Intl (RDU)',
-          destinationCode: 'RDU',
-          scheduled: new Date(Date.now() + 1000 * 60 * 90).toISOString(),
-          note: 'SIMULATED NIH → RDU flight for route-testing only.'
-        };
-      }
-      if (presetId === 'unknownOrigin'){
-        return {
-          ...t,
-          id: 'SIM-UNK-CLT-' + String(simCounter++).padStart(3,'0'),
-          airline: 'Unknown Carrier (SIMULATED)',
-          flightNumber: 'UX' + String(700 + simCounter),
-          origin: 'Unregistered Field (ORG) — SIMULATED',
-          originCode: 'ORG', // not in our map → anomaly
-          destination: 'Charlotte Douglas (CLT)',
-          destinationCode: 'CLT',
-          scheduled: '',
-          note: 'SIMULATED anomaly: origin airport not in configured NC list.'
-        };
-      }
-      // default: extra Bluff City to CLT
-      return createSimulatedBluffCityFlight();
-    }
-
-    async function loadFlights() {
-      loadBtn.disabled = true;
-      loadBtn.textContent = 'Loading…';
-      try {
-        const resp = await fetch('/api/flights?state=NC', { cache: 'no-store' });
-        if (!resp.ok) throw new Error('Server returned ' + resp.status);
-        const data = await resp.json();
-        let flights = Array.isArray(data.flights) ? data.flights : (data || []);
-
-        if (appendSimCheckbox.checked) {
-          flights = flights.concat([createSimulatedBluffCityFlight()]);
-        }
-        renderFlights(flights);
-      } catch (err) {
-        const fallback = [{
-          id:'MOCK-001',
-          airline:'Carolina Air (MOCK)',
-          flightNumber:'CA123',
-          origin:'Raleigh-Durham Intl (RDU)',
-          originCode:'RDU',
-          destination:'Charlotte Douglas (CLT)',
-          destinationCode:'CLT',
-          scheduled:new Date().toISOString(),
-          status:'Scheduled',
-          note:'Fallback mock data — could not reach /api/flights.'
-        }];
-        if (appendSimCheckbox.checked) fallback.push(createSimulatedBluffCityFlight());
-        renderFlights(fallback);
-        console.error('Failed to load /api/flights:', err);
-      } finally {
-        loadBtn.disabled = false;
-        loadBtn.textContent = 'Load NC Flights';
-      }
-    }
-
-    function addSimPreset(){
-      const presetId = simPresetSelect.value || 'bluffCityExtra';
-      const simFlight = createPresetSimFlight(presetId);
-      currentFlights = [simFlight, ...currentFlights];
-      renderFlights(currentFlights);
-      openFlightDetails(simFlight);
-    }
-
-    function highlightCardsByKey(keyLower){
-      document.querySelectorAll('.flight').forEach(card => {
-        const cid = (card.dataset.id || '').toLowerCase();
-        const cf = (card.dataset.flightNumber || '').toLowerCase();
-        if (keyLower && (cid === keyLower || cf === keyLower)){
-          card.classList.add('highlighted');
-          card.scrollIntoView({ behavior:'smooth', block:'center' });
-        } else {
-          card.classList.remove('highlighted');
-        }
-      });
-    }
-
-    function openFlightDetails(f){
-      if (!f) return;
-      const key = (f.id || f.flightNumber || '').toLowerCase();
-      lastHighlightKey = key;
-      highlightCardsByKey(key);
-      const trust = getTrustInfo(f);
-      const anomalies = getAnomaliesForFlight(f);
-
-      detailsDrawer.innerHTML = `
-        <h5>${escapeHtml(f.airline || 'Unknown Airline')} ${f.flightNumber ? ('• ' + escapeHtml(f.flightNumber)) : ''}</h5>
-        <div class="row"><strong>Route:</strong> ${escapeHtml(f.originCode || f.origin || '')} → ${escapeHtml(f.destinationCode || f.destination || '')}</div>
-        <div class="row"><strong>Scheduled:</strong> ${formatDate(f.scheduled || f.time || '')}</div>
-        <div class="row"><strong>Status:</strong> ${escapeHtml(f.status || 'Unknown')}</div>
-        <div class="row"><strong>Trust level:</strong> <span class="trust-badge ${trust.css}">${escapeHtml(trust.label)}</span></div>
-        <div class="row"><strong>Record ID:</strong> ${escapeHtml(f.id || '—')}</div>
-        <div class="row"><strong>Notes:</strong> ${escapeHtml(f.note || '—')}</div>
-        <div class="row"><strong>Potential issues:</strong> ${
-          anomalies.length
-            ? '<ul style="margin:4px 0 0 16px;padding:0;">' +
-              anomalies.map(a => `<li>${escapeHtml(a)}</li>`).join('') +
-              '</ul>'
-            : '<span style="color:#22c55e;">No anomalies detected for this flight.</span>'
-        }</div>
-      `;
-
-      plotFlightsOnMap(currentFlights, key);
-    }
-
-    function searchFlight(){
-      const term = searchInput.value.trim();
-      if (!term) return;
-      if (!currentFlights.length){
-        alert('Load flights first, then search.');
-        return;
-      }
-
-      const lower = term.toLowerCase();
-      const match = currentFlights.find(f =>
-        String(f.flightNumber || '').toLowerCase() === lower ||
-        String(f.id || '').toLowerCase() === lower
-      );
-
-      if (!match){
-        alert('Flight not found. Try a flight number (like CA123) or an ID shown in the list.');
-        highlightCardsByKey(null);
-        plotFlightsOnMap(currentFlights, null);
-        return;
-      }
-
-      openFlightDetails(match);
-    }
-
-    // ==== INITIALIZE ====
-    clearFlights();
-
-    loadBtn.addEventListener('click', loadFlights);
-    clearBtn.addEventListener('click', clearFlights);
-    addSimBtn.addEventListener('click', addSimPreset);
-    searchBtn.addEventListener('click', searchFlight);
-    searchInput.addEventListener('keydown', e => {
-      if(e.key === 'Enter') searchFlight();
+    // ====== Events ======
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleSend();
     });
 
-    analystToggle.addEventListener('change', () => {
-      analystMode = analystToggle.checked;
-      document.body.classList.toggle('analyst-mode', analystMode);
+    randomKeyBtn.addEventListener("click", () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let k = "RANGER-";
+      for (let i = 0; i < 8; i++) {
+        k += chars[Math.floor(Math.random() * chars.length)];
+      }
+      keyInput.value = k;
+      logEvent(`Key randomized to ${k}.`);
     });
 
-    showRealCheckbox.addEventListener('change', () => {
-      plotFlightsOnMap(currentFlights);
+    myNameInput.addEventListener("input", () => {
+      state.myName = myNameInput.value || "Nova";
+      updateTitle();
+      logEvent(`Local ranger name set to ${state.myName}.`);
     });
-    showSimCheckbox.addEventListener('change', () => {
-      plotFlightsOnMap(currentFlights);
+
+    peerNameInput.addEventListener("input", () => {
+      state.peerName = peerNameInput.value || "Vega";
+      logEvent(`Peer ranger name set to ${state.peerName}.`);
     });
+
+    myColorInput.addEventListener("input", () => {
+      state.myColor = myColorInput.value || "#ff4b6a";
+    });
+
+    keyInput.addEventListener("change", () => {
+      logEvent("Shared key changed manually.");
+    });
+
+    privacyBtn.addEventListener("click", () => {
+      state.privacyOn = !state.privacyOn;
+      document.body.classList.toggle("privacy-on", state.privacyOn);
+      privacyBtn.textContent = state.privacyOn ? "Privacy mode: On" : "Privacy mode: Off";
+      logEvent(`Privacy mode ${state.privacyOn ? "enabled" : "disabled"} by user.`);
+    });
+
+    // Auto privacy when window loses focus
+    window.addEventListener("blur", () => {
+      if (!state.privacyOn) {
+        state.privacyOn = true;
+        document.body.classList.add("privacy-on");
+        privacyBtn.textContent = "Privacy mode: On";
+        logEvent("Window blurred; privacy mode auto-enabled.");
+      }
+    });
+
+    // ====== Init ======
+    updateTitle();
+    logEvent("Protect two-window chat loaded. Open this file in a second window for your peer.");
   </script>
 </body>
 </html>
