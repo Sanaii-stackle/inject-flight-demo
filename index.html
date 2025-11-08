@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Leaflet CSS for the map -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <title>Encryptic — NC Flights • RTX Demo</title>
+  <style>
+    :root{
+      --bg:#050814;
+      --card:#0b111d;
+      --card-soft:#111827;
+      --accent:#ff0033;       /* RTX red */
+      --accent-soft:#ff4b6a;
+      --muted:#9ca3af;
+      --sim:#f97316;
+      --glass: rgba(15,23,42,0.7);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(circle at top left, #1f2937 0, transparent 55%),
+        radial-gradient(circle at bottom right, #111827 0, transparent 55%),
+        linear-gradient(180deg,#020617 0%, #020617 100%);
+      color:#e5e7eb;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:28px;
+    }
+    .wrap{width:100%;max-width:1080px;}
+    header{text-align:center;margin-bottom:18px}
+    header h1{
+      margin:6px 0;
+      font-size:1.7rem;
+      color:#f9fafb;
+      letter-spacing:0.03em;
+    }
+    header p{
+      margin:6px 0 0 0;
+      color:var(--muted);
+      font-size:0.95rem;
+    }
+    header .rtx-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(248,113,113,0.08);
+      color:var(--accent-soft);
+      font-size:0.75rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    header .safety-banner{
+      margin-top:10px;
+      display:inline-flex;
+      align-items:flex-start;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:10px;
+      background:rgba(248,250,252,0.03);
+      border:1px dashed rgba(248,113,113,0.7);
+      color:#fecaca;
+      font-size:0.8rem;
+      max-width:720px;
+      text-align:left;
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      margin:20px 0
+    }
+    .btn{
+      background:var(--accent);
+      color:#f9fafb;
+      border:none;
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:0.9rem;
+      box-shadow:0 8px 22px rgba(239,68,68,0.35);
+      border:1px solid rgba(248,113,113,0.4);
+      transition:0.18s ease;
+    }
+    .btn.secondary{
+      background:#020617;
+      color:var(--accent-soft);
+      box-shadow:none;
+      border:1px solid rgba(148,163,184,0.6);
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 26px rgba(248,113,113,0.5);
+    }
+    .btn.secondary:hover{
+      background:#020617;
+      box-shadow:0 6px 18px rgba(15,23,42,0.8);
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      color:var(--muted);
+      font-size:0.85rem;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.75);
+      border:1px solid rgba(55,65,81,0.9);
+    }
+    .toggle input{
+      accent-color:var(--sim);
+    }
+
+    /* search styling */
+    .search-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background:linear-gradient(135deg,#020617,#0b1120);
+      border-radius:999px;
+      padding:1px;
+      border:1px solid rgba(148,163,184,0.7);
+      box-shadow:0 0 18px rgba(15,23,42,0.9);
+    }
+    .search-input {
+      padding: 9px 38px 9px 36px;
+      border-radius:999px;
+      border:none;
+      min-width: 230px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: radial-gradient(circle at top left,#020617 0,#020617 40%,#020617 100%);
+      color: #e5e7eb;
+      transition:0.2s ease;
+    }
+    .search-input::placeholder {
+      color:#6b7280;
+    }
+    .search-input:focus {
+      outline:none;
+      box-shadow:0 0 0 1px var(--accent-soft);
+    }
+    .search-icon {
+      position:absolute;
+      left:12px;
+      color:var(--accent-soft);
+      font-size:1rem;
+      pointer-events:none;
+    }
+
+    .sim-select{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.7);
+      background:#020617;
+      color:#e5e7eb;
+      font-size:0.8rem;
+    }
+
+    .area{
+      display:grid;
+      grid-template-columns:1.3fr 0.9fr;
+      gap:18px;
+      align-items:start;
+      margin-top:8px;
+    }
+    .flights{
+      background:radial-gradient(circle at top left,#020617 0,#020617 35%,#020617 100%);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 18px 38px rgba(0,0,0,0.9);
+      border:1px solid rgba(31,41,55,0.9);
+    }
+    .side{
+      background:var(--glass);
+      padding:16px;
+      border-radius:14px;
+      box-shadow:0 16px 32px rgba(0,0,0,0.85);
+      border:1px solid rgba(31,41,55,0.9);
+      backdrop-filter:blur(16px);
+      font-size:12px;
+    }
+    .side h4{
+      margin:0 0 8px 0;
+      font-size:0.95rem;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      color:#e5e7eb;
+    }
+
+    .flight{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      border-radius:12px;
+      margin-bottom:10px;
+      border:1px solid rgba(31,41,55,0.8);
+      background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(17,24,39,0.95));
+      transition:0.18s ease;
+      cursor:pointer;
+    }
+    .flight .left{flex:1}
+    .flight h3{
+      margin:0;
+      font-size:0.98rem;
+      color:#f9fafb;
+    }
+    .meta{
+      color:var(--muted);
+      font-size:0.82rem;
+      margin-top:6px;
+    }
+    .right{text-align:right;min-width:130px}
+    .status{
+      font-weight:700;
+      font-size:0.85rem;
+      color:#e5e7eb;
+    }
+    .sim-pill{
+      display:inline-block;
+      padding:5px 8px;
+      border-radius:999px;
+      background:rgba(249,115,22,0.16);
+      color:#fed7aa;
+      font-size:11px;
+      margin-left:8px;
+      border:1px solid rgba(249,115,22,0.8);
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+    }
+    .flight.simulated{
+      border-left:4px solid var(--sim);
+      box-shadow:0 10px 26px rgba(249,115,22,0.4);
+    }
+    /* trust badges */
+    .trust-badge{
+      display:inline-block;
+      padding:3px 7px;
+      border-radius:999px;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+      margin-bottom:4px;
+    }
+    .trust-real{
+      background:rgba(34,197,94,0.15);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,0.8);
+    }
+    .trust-sim{
+      background:rgba(248,113,113,0.15);
+      color:#fecaca;
+      border:1px solid rgba(248,113,113,0.9);
+    }
+
+    /* analyst mode extra meta */
+    .analyst-meta{
+      display:none;
+      font-size:11px;
+      color:#9ca3af;
+      margin-top:6px;
+    }
+    body.analyst-mode .analyst-meta{
+      display:block;
+    }
+
+    /* highlight selected flight card */
+    .flight.highlighted{
+      border:1px solid var(--accent-soft);
+      box-shadow:0 0 0 1px rgba(248,113,113,0.5),0 12px 34px rgba(239,68,68,0.55);
+      transform:translateY(-1px);
+    }
+
+    .note{
+      font-size:11px;
+      color:#9ca3af;
+      margin-top:8px;
+    }
+    footer{
+      margin-top:18px;
+      text-align:center;
+      color:#6b7280;
+      font-size:12px;
+    }
+    footer span{
+      color:var(--accent-soft);
+    }
+
+    #map{
+      height:420px;
+      border-radius:18px;
+      margin:22px 0 10px 0;
+      box-shadow:0 20px 46px rgba(0,0,0,0.95);
+      border:1px solid rgba(31,41,55,0.9);
+      overflow:hidden;
+    }
+
+    .layer-toggles{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+      font-size:11px;
+      color:#9ca3af;
+      margin-bottom:6px;
+    }
+    .layer-toggles label{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.8);
+      border:1px solid rgba(55,65,81,0.9);
+    }
+    .layer-toggles input{
+      accent-color:var(--accent-soft);
+    }
+
+    .integrity-panel{
+      margin-top:4px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:rgba(15,23,42,0.85);
+      border:1px solid rgba(55,65,81,0.9);
+      font-size:11px;
+      color:#e5e7eb;
+    }
+    .integrity-panel strong{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:#e5e7eb;
+    }
+    .integrity-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:6px;
+      margin-top:6px;
+    }
+    .integrity-item{
+      padding:4px 6px;
+      border-radius:8px;
+      background:rgba(15,23,42,0.9);
+      border:1px solid rgba(31,41,55,0.9);
+      text-align:center;
+    }
+    .integrity-item span{
+      display:block;
+      font-size:10px;
+      color:#9ca3af;
+    }
+    .integrity-item b{
+      font-size:13px;
+    }
+
+    .anomaly-panel{
+      margin-top:10px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:rgba(15,23,42,0.85);
+      border:1px solid rgba(55,65,81,0.9);
+      max-height:130px;
+      overflow:auto;
+    }
+    .anomaly-panel ul{
+      margin:4px 0 0 14px;
+      padding:0;
+    }
+
+    .details-drawer{
+      margin-top:10px;
+      padding:10px;
+      border-radius:10px;
+      background:rgba(15,23,42,0.85);
+      border:1px solid rgba(55,65,81,0.9);
+      min-height:80px;
+    }
+    .details-drawer h5{
+      margin:0 0 6px 0;
+      font-size:0.9rem;
+      color:#f9fafb;
+    }
+    .details-drawer .row{
+      font-size:11px;
+      margin-bottom:4px;
+    }
+
+    @media (max-width:880px){
+      .area{grid-template-columns:1fr}
+      .right{min-width:90px}
+      .controls{
+        flex-direction:column;
+        align-items:stretch
+      }
+      .search-wrapper{width:100%}
+      .search-input{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="rtx-tag">
+        RTX • Collins AeroAPI Demo
+      </div>
+      <h1>Encryptic — NC Flight Viewer</h1>
+      <p>Visualize Collins AeroAPI data, clearly labeled simulated Bluff City (NIH) routes, and extra test flights in an RTX-styled safety dashboard.</p>
+      <div class="safety-banner">
+        <span>⚠️</span>
+        <span>
+          This is a training demo. Simulated flights are <strong>not real</strong> and must never be used for navigation or operational decisions.
+          All injected flights are labeled SIMULATED and flagged in the map and panels below.
+        </span>
+      </div>
+    </header>
+
+    <div class="controls">
+      <button class="btn" id="loadBtn">Load NC Flights</button>
+      <button class="btn secondary" id="clearBtn">Clear</button>
+
+      <label class="toggle" title="When checked, the page will append a Bluff City (NIH) simulated flight after loading Collins data">
+        <input type="checkbox" id="appendSim" />
+        Append Bluff City (NIH) sim
+      </label>
+
+      <label class="toggle" title="Show additional technical fields and IDs">
+        <input type="checkbox" id="analystToggle" />
+        Analyst mode
+      </label>
+
+      <!-- Simulated presets -->
+      <select id="simPreset" class="sim-select" title="Choose an extra simulated flight scenario">
+        <option value="bluffCityExtra">Bluff City NIH → CLT (demo)</option>
+        <option value="nihToRdu">Bluff City NIH → RDU (test)</option>
+        <option value="unknownOrigin">Unknown ORG → CLT (anomaly)</option>
+      </select>
+      <button class="btn secondary" id="addSimBtn" title="Add the selected simulated flight preset">
+        Add Sim Preset
+      </button>
+
+      <!-- 🔍 RTX-styled search with plane icon -->
+      <div class="search-wrapper">
+        <span class="search-icon">✈️</span>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Search by flight # (CA123) or ID"
+        />
+      </div>
+      <button class="btn" id="searchBtn">
+        Search Flight
+      </button>
+    </div>
+
+    <!-- 🌍 Map section -->
+    <div id="map"></div>
+
+    <!-- Layer toggles -->
+    <div class="layer-toggles">
+      <label><input type="checkbox" id="showReal" checked> Real flights</label>
+      <label><input type="checkbox" id="showSim" checked> Simulated flights</label>
+    </div>
+
+    <!-- flight list + sidebar -->
+    <div class="area">
+      <div class="flights" id="flightsContainer"></div>
+
+      <aside class="side">
+        <h4>Info & Notes</h4>
+        <p class="note">
+          This dashboard shows Collins AeroAPI NC flights plus clearly labeled simulated traffic used for testing.
+          Simulated flights are visually distinct, flagged in the integrity panel, and annotated in the details drawer.
+        </p>
+
+        <div id="integritySummary" class="integrity-panel">
+          <!-- filled by JS -->
+        </div>
+
+        <div id="anomaliesPanel" class="anomaly-panel">
+          <!-- filled by JS -->
+        </div>
+
+        <div id="detailsDrawer" class="details-drawer">
+          <div class="note">Select a flight from the list, search box, or map to view detailed information and potential issues.</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      RTX-themed demo • <span>Encryptic x Collins AeroAPI</span> • Simulated flights are clearly labeled
+    </footer>
+  </div>
+
+  <!-- Leaflet JS for the map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // ==== DOM ELEMENTS ====
+    const loadBtn = document.getElementById('loadBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const flightsContainer = document.getElementById('flightsContainer');
+    const appendSimCheckbox = document.getElementById('appendSim');
+    const analystToggle = document.getElementById('analystToggle');
+    const simPresetSelect = document.getElementById('simPreset');
+    const addSimBtn = document.getElementById('addSimBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const integritySummary = document.getElementById('integritySummary');
+    const anomaliesPanel = document.getElementById('anomaliesPanel');
+    const detailsDrawer = document.getElementById('detailsDrawer');
+    const showRealCheckbox = document.getElementById('showReal');
+    const showSimCheckbox = document.getElementById('showSim');
+
+    // store current flights
+    let currentFlights = [];
+    let analystMode = false;
+    let lastHighlightKey = null;
+    let simCounter = 1;
+
+    // ==== MAP SETUP ====
+    const airportCoords = {
+      CLT:{lat:35.2144,lon:-80.9473},
+      RDU:{lat:35.8801,lon:-78.7880},
+      GSO:{lat:36.1053,lon:-79.9370},
+      ILM:{lat:34.2706,lon:-77.9026},
+      FAY:{lat:34.9912,lon:-78.8803},
+      OAJ:{lat:34.8292,lon:-77.6121},
+      EWN:{lat:35.0730,lon:-77.0429},
+      PGV:{lat:35.6352,lon:-77.3853},
+      NIH:{lat:35.25,lon:-78.95} // fake Bluff City
+    };
+
+    const map = L.map('map').setView([35.5, -79.5], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    const flightLayer = L.layerGroup().addTo(map);
+
+    function isSimulatedFlight(f){
+      return f.simulated === true ||
+        String(f.status||'').toUpperCase().includes('SIMULATED') ||
+        (f.note && f.note.toUpperCase().includes('SIMULATED'));
+    }
+
+    function getTrustInfo(f){
+      if (isSimulatedFlight(f)){
+        return { label:'Simulated / Injected', css:'trust-sim' };
+      }
+      return { label:'Collins API (Primary)', css:'trust-real' };
+    }
+
+    function getAnomaliesForFlight(f){
+      const issues = [];
+      const originRaw = f.originCode || '';
+      const destRaw   = f.destinationCode || '';
+      const origin = originRaw.replace(/^K/,'');
+      const dest   = destRaw.replace(/^K/,'');
+
+      if (!airportCoords[origin]){
+        issues.push(`Origin airport ${origin || 'UNKNOWN'} is not in the configured NC list.`);
+      }
+      if (!airportCoords[dest]){
+        issues.push(`Destination airport ${dest || 'UNKNOWN'} is not in the configured NC list.`);
+      }
+      if (!f.scheduled && !f.time){
+        issues.push('Missing scheduled time in the record.');
+      }
+      if (isSimulatedFlight(f)){
+        issues.push('Simulated / injected flight (not real operational data).');
+      }
+      return issues;
+    }
+
+    /**
+     * Plot flights on the map.
+     * @param {Array} flights
+     * @param {string|undefined|null} highlightKey  flight id or flightNumber to highlight
+     */
+    function plotFlightsOnMap(flights, highlightKey){
+      // reuse last highlight if none explicitly provided
+      if (typeof highlightKey === 'undefined'){
+        highlightKey = lastHighlightKey;
+      } else if (highlightKey){
+        lastHighlightKey = highlightKey.toLowerCase();
+      }
+
+      flightLayer.clearLayers();
+      if(!flights || flights.length === 0) return;
+
+      const showReal = !showRealCheckbox || showRealCheckbox.checked;
+      const showSim  = !showSimCheckbox || showSimCheckbox.checked;
+      const keyLower = (highlightKey || '').toLowerCase();
+
+      flights.forEach(f=>{
+        const originCodeRaw = f.originCode || '';
+        const destCodeRaw   = f.destinationCode || '';
+        const origin = originCodeRaw.replace(/^K/,'');
+        const dest   = destCodeRaw.replace(/^K/,'');
+
+        const o = airportCoords[origin];
+        const d = airportCoords[dest];
+        const sim = isSimulatedFlight(f);
+
+        // layer filter
+        if (sim && !showSim) return;
+        if (!sim && !showReal) return;
+
+        if(!o || !d) return;
+
+        const idLower = String(f.id||'').toLowerCase();
+        const fnLower = String(f.flightNumber||'').toLowerCase();
+        const isHighlight = keyLower && (idLower === keyLower || fnLower === keyLower);
+
+        L.polyline([[o.lat,o.lon],[d.lat,d.lon]],{
+          color:sim ? '#f97316' : '#22c55e',
+          weight:isHighlight ? 5 : 3,
+          opacity:isHighlight ? 1 : 0.8
+        }).addTo(flightLayer);
+
+        const marker = L.circleMarker([d.lat,d.lon],{
+          radius:isHighlight ? 8 : 6,
+          color:sim ? '#f97316' : '#22c55e',
+          fillOpacity:0.9
+        }).addTo(flightLayer).bindPopup(
+          `<b>${f.airline||'Unknown'} • ${f.flightNumber||''}</b><br>${origin} → ${dest}<br>${f.status||''}`
+        );
+
+        marker.on('click', () => {
+          openFlightDetails(f);
+        });
+
+        if(isHighlight){
+          map.setView([d.lat,d.lon], 8, { animate:true });
+          marker.openPopup();
+        }
+      });
+    }
+
+    function formatDate(iso) {
+      if (!iso) return 'TBD';
+      try { return new Date(iso).toLocaleString(); } catch { return iso; }
+    }
+
+    function escapeHtml(s) {
+      if (!s && s !== 0) return '';
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
+    }
+
+    function clearFlights() {
+      currentFlights = [];
+      flightsContainer.innerHTML =
+        '<p style="color:var(--muted);text-align:center;margin:30px 0">No flights loaded.</p>';
+      plotFlightsOnMap([]);
+      updateIntegrityPanel([]);
+      updateAnomaliesPanel([]);
+      detailsDrawer.innerHTML =
+        '<div class="note">Select a flight from the list, search box, or map to view detailed information and potential issues.</div>';
+    }
+
+    function updateIntegrityPanel(flights){
+      const total = flights.length;
+      const simulated = flights.filter(isSimulatedFlight).length;
+      const suspicious = flights.filter(f => getAnomaliesForFlight(f).length > 0).length;
+      const real = total - simulated;
+
+      integritySummary.innerHTML = `
+        <strong>Data Integrity Summary</strong>
+        <div class="integrity-grid">
+          <div class="integrity-item">
+            <span>Total flights</span>
+            <b>${total}</b>
+          </div>
+          <div class="integrity-item">
+            <span>Real (Collins)</span>
+            <b>${real}</b>
+          </div>
+          <div class="integrity-item">
+            <span>Simulated / Suspicious</span>
+            <b>${simulated}/${suspicious}</b>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateAnomaliesPanel(flights){
+      const withIssues = flights
+        .map(f => ({ flight:f, issues:getAnomaliesForFlight(f) }))
+        .filter(x => x.issues.length > 0);
+
+      if (!withIssues.length){
+        anomaliesPanel.innerHTML = `
+          <strong>Potential Issues</strong>
+          <p style="margin:4px 0 0 0;color:#9ca3af;font-size:11px">
+            No anomalies detected in the current view. Simulated and misconfigured flights will appear here.
+          </p>
+        `;
+        return;
+      }
+
+      anomaliesPanel.innerHTML = `
+        <strong>Potential Issues (${withIssues.length})</strong>
+        <ul>
+          ${withIssues.slice(0,6).map(x => `
+            <li>
+              <span style="color:#e5e7eb;font-size:11px">
+                <b>${escapeHtml(x.flight.flightNumber || x.flight.id || 'Flight')}</b>:
+                ${escapeHtml(x.issues[0])}
+              </span>
+            </li>
+          `).join('')}
+        </ul>
+        ${withIssues.length > 6 ? `<p style="margin:4px 0 0 0;font-size:10px;color:#9ca3af">+ ${withIssues.length-6} more…</p>` : ''}
+      `;
+    }
+
+    function renderFlights(flights) {
+      currentFlights = Array.isArray(flights) ? flights : [];
+      if (currentFlights.length === 0) {
+        clearFlights();
+        return;
+      }
+
+      flightsContainer.innerHTML = '';
+      currentFlights.forEach(f => {
+        const sim = isSimulatedFlight(f);
+        const trust = getTrustInfo(f);
+        const el = document.createElement('div');
+        el.className = 'flight' + (sim ? ' simulated' : '');
+        el.dataset.id = f.id || '';
+        el.dataset.flightNumber = f.flightNumber || '';
+
+        el.innerHTML = `
+          <div class="left">
+            <h3>${escapeHtml(f.airline || 'Unknown Airline')}
+              ${f.flightNumber ? ('• ' + escapeHtml(f.flightNumber)) : '' }
+              ${sim ? '<span class="sim-pill">SIMULATED — NOT REAL</span>' : ''}</h3>
+            <div class="meta">
+              ${escapeHtml(f.originCode || f.origin || '')}
+              →
+              ${escapeHtml(f.destinationCode || f.destination || '')}
+              •
+              ${formatDate(f.scheduled || f.time || '')}
+            </div>
+            <div class="note">${escapeHtml(f.note || '')}</div>
+            <div class="analyst-meta">
+              ID: ${escapeHtml(f.id || '—')} · Trust: ${escapeHtml(trust.label)}
+            </div>
+          </div>
+          <div class="right">
+            <div class="trust-badge ${trust.css}">${escapeHtml(trust.label)}</div>
+            <div class="status">${escapeHtml(f.status || 'Unknown')}</div>
+            <div class="meta" style="margin-top:4px">${escapeHtml(f.id || '')}</div>
+          </div>`;
+
+        el.addEventListener('click', () => openFlightDetails(f));
+        flightsContainer.appendChild(el);
+      });
+
+      updateIntegrityPanel(currentFlights);
+      updateAnomaliesPanel(currentFlights);
+      plotFlightsOnMap(currentFlights);
+    }
+
+    function baseBluffCitySim(){
+      return {
+        airline: 'Bluff City Air (SIMULATED)',
+        origin: 'Bluff City Airport (NIH) — SIMULATED — NOT REAL',
+        originCode: 'NIH',
+        status: 'SIMULATED',
+        note: 'SIMULATED ENTRY — FOR DEMO/TESTING PURPOSES ONLY. NOT REAL FLIGHT DATA.',
+        simulated: true
+      };
+    }
+
+    function createSimulatedBluffCityFlight() {
+      const base = baseBluffCitySim();
+      return {
+        ...base,
+        id: 'SIM-BLFF-' + String(simCounter++).padStart(3,'0'),
+        flightNumber: 'BC' + String(900 + simCounter),
+        destination: 'Charlotte Douglas (CLT)',
+        destinationCode: 'CLT',
+        scheduled: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString()
+      };
+    }
+
+    function createPresetSimFlight(presetId){
+      const t = baseBluffCitySim();
+      if (presetId === 'nihToRdu'){
+        return {
+          ...t,
+          id: 'SIM-NIH-RDU-' + String(simCounter++).padStart(3,'0'),
+          flightNumber: 'BC' + String(950 + simCounter),
+          destination: 'Raleigh-Durham Intl (RDU)',
+          destinationCode: 'RDU',
+          scheduled: new Date(Date.now() + 1000 * 60 * 90).toISOString(),
+          note: 'SIMULATED NIH → RDU flight for route-testing only.'
+        };
+      }
+      if (presetId === 'unknownOrigin'){
+        return {
+          ...t,
+          id: 'SIM-UNK-CLT-' + String(simCounter++).padStart(3,'0'),
+          airline: 'Unknown Carrier (SIMULATED)',
+          flightNumber: 'UX' + String(700 + simCounter),
+          origin: 'Unregistered Field (ORG) — SIMULATED',
+          originCode: 'ORG', // not in our map → anomaly
+          destination: 'Charlotte Douglas (CLT)',
+          destinationCode: 'CLT',
+          scheduled: '',
+          note: 'SIMULATED anomaly: origin airport not in configured NC list.'
+        };
+      }
+      // default: extra Bluff City to CLT
+      return createSimulatedBluffCityFlight();
+    }
+
+    async function loadFlights() {
+      loadBtn.disabled = true;
+      loadBtn.textContent = 'Loading…';
+      try {
+        const resp = await fetch('/api/flights?state=NC', { cache: 'no-store' });
+        if (!resp.ok) throw new Error('Server returned ' + resp.status);
+        const data = await resp.json();
+        let flights = Array.isArray(data.flights) ? data.flights : (data || []);
+
+        if (appendSimCheckbox.checked) {
+          flights = flights.concat([createSimulatedBluffCityFlight()]);
+        }
+        renderFlights(flights);
+      } catch (err) {
+        const fallback = [{
+          id:'MOCK-001',
+          airline:'Carolina Air (MOCK)',
+          flightNumber:'CA123',
+          origin:'Raleigh-Durham Intl (RDU)',
+          originCode:'RDU',
+          destination:'Charlotte Douglas (CLT)',
+          destinationCode:'CLT',
+          scheduled:new Date().toISOString(),
+          status:'Scheduled',
+          note:'Fallback mock data — could not reach /api/flights.'
+        }];
+        if (appendSimCheckbox.checked) fallback.push(createSimulatedBluffCityFlight());
+        renderFlights(fallback);
+        console.error('Failed to load /api/flights:', err);
+      } finally {
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load NC Flights';
+      }
+    }
+
+    function addSimPreset(){
+      const presetId = simPresetSelect.value || 'bluffCityExtra';
+      const simFlight = createPresetSimFlight(presetId);
+      currentFlights = [simFlight, ...currentFlights];
+      renderFlights(currentFlights);
+      openFlightDetails(simFlight);
+    }
+
+    function highlightCardsByKey(keyLower){
+      document.querySelectorAll('.flight').forEach(card => {
+        const cid = (card.dataset.id || '').toLowerCase();
+        const cf = (card.dataset.flightNumber || '').toLowerCase();
+        if (keyLower && (cid === keyLower || cf === keyLower)){
+          card.classList.add('highlighted');
+          card.scrollIntoView({ behavior:'smooth', block:'center' });
+        } else {
+          card.classList.remove('highlighted');
+        }
+      });
+    }
+
+    function openFlightDetails(f){
+      if (!f) return;
+      const key = (f.id || f.flightNumber || '').toLowerCase();
+      lastHighlightKey = key;
+      highlightCardsByKey(key);
+      const trust = getTrustInfo(f);
+      const anomalies = getAnomaliesForFlight(f);
+
+      detailsDrawer.innerHTML = `
+        <h5>${escapeHtml(f.airline || 'Unknown Airline')} ${f.flightNumber ? ('• ' + escapeHtml(f.flightNumber)) : ''}</h5>
+        <div class="row"><strong>Route:</strong> ${escapeHtml(f.originCode || f.origin || '')} → ${escapeHtml(f.destinationCode || f.destination || '')}</div>
+        <div class="row"><strong>Scheduled:</strong> ${formatDate(f.scheduled || f.time || '')}</div>
+        <div class="row"><strong>Status:</strong> ${escapeHtml(f.status || 'Unknown')}</div>
+        <div class="row"><strong>Trust level:</strong> <span class="trust-badge ${trust.css}">${escapeHtml(trust.label)}</span></div>
+        <div class="row"><strong>Record ID:</strong> ${escapeHtml(f.id || '—')}</div>
+        <div class="row"><strong>Notes:</strong> ${escapeHtml(f.note || '—')}</div>
+        <div class="row"><strong>Potential issues:</strong> ${
+          anomalies.length
+            ? '<ul style="margin:4px 0 0 16px;padding:0;">' +
+              anomalies.map(a => `<li>${escapeHtml(a)}</li>`).join('') +
+              '</ul>'
+            : '<span style="color:#22c55e;">No anomalies detected for this flight.</span>'
+        }</div>
+      `;
+
+      plotFlightsOnMap(currentFlights, key);
+    }
+
+    function searchFlight(){
+      const term = searchInput.value.trim();
+      if (!term) return;
+      if (!currentFlights.length){
+        alert('Load flights first, then search.');
+        return;
+      }
+
+      const lower = term.toLowerCase();
+      const match = currentFlights.find(f =>
+        String(f.flightNumber || '').toLowerCase() === lower ||
+        String(f.id || '').toLowerCase() === lower
+      );
+
+      if (!match){
+        alert('Flight not found. Try a flight number (like CA123) or an ID shown in the list.');
+        highlightCardsByKey(null);
+        plotFlightsOnMap(currentFlights, null);
+        return;
+      }
+
+      openFlightDetails(match);
+    }
+
+    // ==== INITIALIZE ====
+    clearFlights();
+
+    loadBtn.addEventListener('click', loadFlights);
+    clearBtn.addEventListener('click', clearFlights);
+    addSimBtn.addEventListener('click', addSimPreset);
+    searchBtn.addEventListener('click', searchFlight);
+    searchInput.addEventListener('keydown', e => {
+      if(e.key === 'Enter') searchFlight();
+    });
+
+    analystToggle.addEventListener('change', () => {
+      analystMode = analystToggle.checked;
+      document.body.classList.toggle('analyst-mode', analystMode);
+    });
+
+    showRealCheckbox.addEventListener('change', () => {
+      plotFlightsOnMap(currentFlights);
+    });
+    showSimCheckbox.addEventListener('change', () => {
+      plotFlightsOnMap(currentFlights);
+    });
+  </script>
+</body>
+</html>
